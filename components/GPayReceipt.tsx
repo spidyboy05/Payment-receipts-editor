@@ -48,9 +48,9 @@ export const GPayReceipt: React.FC<Props> = ({ data }) => {
         </p>
         
         {/* Mobile Number */}
-        <p className={`text-[0.9rem] ${textSecondary} mt-1 font-normal tracking-wide`}>
+        {/* <p className={`text-[0.9rem] ${textSecondary} mt-1 font-normal tracking-wide`}>
             {data.senderMobile || data.senderId}
-        </p>
+        </p> */}
 
         {/* Amount - Specific Font Weight and Size */}
         <div className="mt-8 mb-8 flex items-baseline space-x-1">
@@ -123,7 +123,7 @@ export const GPayReceipt: React.FC<Props> = ({ data }) => {
                 
                 <div>
                   <p className={`${labelClass} text-sm  mb-1`}>Google transaction ID</p>
-                  <p className={`${textPrimary} text-[0.85rem] font-normal`}>CICAgLD{data.transactionId.substring(0, 5)}-vYw</p>
+                  <p className={`${textPrimary} text-[0.85rem] font-normal`}>{data.utr}</p>
                 </div>
             </div>
             </div>
