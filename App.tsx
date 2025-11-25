@@ -22,7 +22,7 @@ const INITIAL_DATA: ReceiptData = {
   amount: '8,000',
   date: '25 Nov 2025',
   time: '07:48 pm',
-  receiverName: 'RAHUL MAHENDRA JADHAV',
+  receiverName: 'RAHUL JADHAV',
   receiverId: 'rahuljadhav90@okaxis',
   receiverBankName: 'Axis Bank',
   receiverLast4: '1845',
