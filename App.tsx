@@ -9,7 +9,7 @@ const BANKS: Bank[] = [
   { name: 'Bank of India', logo: 'src/Bank of India.png' },
   { name: 'State Bank of India', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg' },
   { name: 'Axis Bank', logo: 'src/Axis Bank.png' },
-  { name: 'Bank of Baroda', logo: 'src/1Bank of Baroda.png' },
+  { name: 'Bank of Baroda', logo: 'https://drive.google.com/file/d/1zag7zF3jLUxZQfDvtbSWHNIcyWCVD5fe/view?usp=sharing' },
   { name: 'HDFC Bank', logo: 'src/HDFC Bank.png' },
   { name: 'ICICI Bank', logo: 'src/ICICI Bank.png' },
   { name: 'Union Bank of India', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Union_Bank_of_India_Logo.svg' },
