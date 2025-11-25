@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { PhonePeReceipt } from './components/PhonePeReceipt';
 import { GPayReceipt } from './components/GPayReceipt';
 import { ReceiptData, TemplateType, Bank } from './types';
+import BulkGenerator from './components/BulkGenerator';
 
 // Bank Data with Logos
 const BANKS: Bank[] = [
   { name: 'Bank of India', logo: '/Bank of India.png' },
   { name: 'State Bank of India', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg' },
   { name: 'Axis Bank', logo: '/Axis Bank.png' },
-  { name: 'Bank of Baroda', logo: '/Bank of Baroda.png' },
+  { name: 'Bank of Baroda', logo: '/1Bank of Baroda.png' },
   { name: 'HDFC Bank', logo: '/HDFC Bank.png' },
   { name: 'ICICI Bank', logo: '/ICICI Bank.png' },
   { name: 'Union Bank of India', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Union_Bank_of_India_Logo.svg' },
@@ -18,22 +18,84 @@ const BANKS: Bank[] = [
 ];
 
 
+// Generate random phone number with +91 and 8-9 digit pattern
+const generatePhone = () => {
+  const firstDigit = Math.random() > 0.5 ? 8 : 9;
+  const remaining = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10)).join('');
+  return `+91 ${firstDigit}${remaining}`;
+};
+
+// Generate random transaction ID
+const generateTransactionId = () => {
+  return Math.floor(Math.random() * 1000000000000).toString();
+};
+
+// Generate random Google transaction ID
+const generateGoogleTransactionId = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'CIC';
+  for (let i = 0; i < 13; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Generate random sender name
+const generateSenderName = () => {
+  const firstNames = ['Rajesh', 'Priya', 'Amit', 'Sneha', 'Vikram', 'Neha', 'Arjun', 'Pooja', 'Rohan', 'Ananya', 'Karan', 'Divya'];
+  const lastNames = ['Sharma', 'Patel', 'Kumar', 'Singh', 'Gupta', 'Reddy', 'Verma', 'Joshi', 'Nair', 'Iyer', 'Desai', 'Rao'];
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+  return `${firstName} ${lastName}`;
+};
+
+// Generate random sender bank and its UPI domain
+const generateSenderBank = () => {
+  const senderBanks = [
+    { name: 'HDFC Bank', domain: 'okhdfcbank' },
+    { name: 'ICICI Bank', domain: 'okicici' },
+    { name: 'Axis Bank', domain: 'okaxis' },
+    { name: 'State Bank of India', domain: 'oksbi' },
+    { name: 'Union Bank of India', domain: 'okunion' },
+    { name: 'Punjab National Bank', domain: 'okpnb' },
+  ];
+  return senderBanks[Math.floor(Math.random() * senderBanks.length)];
+};
+
+// Generate random UPI ID using sender name and bank domain
+const generateSenderUPI = (fullName?: string, domain?: string) => {
+  // fallback to small random string if name not provided
+  const rand = Math.random().toString(36).substring(2, 6);
+  if (!fullName) {
+    return `${rand}@${domain || 'okaxis'}`;
+  }
+  const parts = fullName.split(' ').filter(Boolean);
+  const first = parts[0] ? parts[0].toLowerCase().replace(/[^a-z]/g, '') : '';
+  const last = parts[1] ? parts[1].toLowerCase().replace(/[^a-z]/g, '') : '';
+  const namePart = (first + last).substring(0, 12) || rand;
+  return `${namePart}${rand}@${domain || 'okaxis'}`;
+};
+
+// generate initial sender and bank so INITIAL_DATA types match
+const initialSenderName = generateSenderName();
+const initialBank = generateSenderBank();
+
 const INITIAL_DATA: ReceiptData = {
   amount: '8,000',
   date: '25 Nov 2025',
   time: '07:48 pm',
-  receiverName: 'RAHUL RAJESH JADHAV',
-  receiverId: 'rahuljadhav90@okaxis',
+  receiverName: 'VIVAN INTERNATIONAL',
+  receiverId: 'vivaninternational@okaxis',
   receiverBankName: 'Axis Bank',
   receiverLast4: '1845',
   bankLogo: BANKS[2].logo,
-  senderName: 'Neelam Sharma',
-  senderMobile: '+91 90872 66341',
-  senderId: 'neelam.sharma05@okicici',
-  senderBankName: 'ICICI Bank',
+  senderName: initialSenderName,
+  senderMobile: generatePhone(),
+  senderId: generateSenderUPI(initialSenderName, initialBank.domain),
+  senderBankName: initialBank.name,
   senderLast4: '9372',
-  transactionId: '987451203872',
-  utr: '259873640112',
+  transactionId: generateTransactionId(),
+  utr: generateGoogleTransactionId(),
   darkMode: true,
   status: 'Success',
 };
@@ -43,10 +105,26 @@ function App() {
   const [data, setData] = useState<ReceiptData>(INITIAL_DATA);
   const [template, setTemplate] = useState<TemplateType>(TemplateType.GPAY);
   const [showPreview, setShowPreview] = useState(true);
+  const [showBulk, setShowBulk] = useState(false);
 
   const handleChange = (field: keyof ReceiptData, value: any) => {
     setData((prev) => ({ ...prev, [field]: value }));
   };
+  const generateIds = () => {
+    const newName = generateSenderName();
+    const newBank = generateSenderBank();
+    setData(prev => ({
+      ...prev,
+      senderName: newName,
+      senderMobile: generatePhone(),
+      senderId: generateSenderUPI(newName, newBank.domain),
+      senderBankName: newBank.name,
+      transactionId: generateTransactionId(),
+      utr: generateGoogleTransactionId()
+    }));
+  };
+
+  const TemplateComponent = template === TemplateType.PHONE_PE ? PhonePeReceipt : GPayReceipt;
 
   const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedBank = BANKS.find(b => b.name === e.target.value);
@@ -60,25 +138,29 @@ function App() {
   };
 
   const handlePrint = () => {
+    // Apply a randomized transform to the single receipt before printing so layout/position vary
+    const el = document.querySelector('.printable .shadow-2xl') as HTMLElement | null;
+    if (el) {
+      const scale = 0.94 + Math.random() * 0.12; // ~0.94 - 1.06
+      const tx = Math.floor((Math.random() * 40) - 20); // -20px .. 20px
+      const ty = Math.floor((Math.random() * 40) - 20);
+      el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+
+      const cleanup = () => {
+        el.style.transform = '';
+        el.style.transformOrigin = '';
+        window.removeEventListener('afterprint', cleanup);
+      };
+      window.addEventListener('afterprint', cleanup);
+    }
     window.print();
   };
-
-  const generateIds = () => {
-    const randomNum = Math.floor(Math.random() * 1000000000000);
-    setData(prev => ({
-        ...prev,
-        transactionId: `${Math.floor(Math.random() * 1000000000000)}`,
-        utr: `${randomNum}`
-    }));
-  };
-
-  const TemplateComponent = template === TemplateType.PHONE_PE ? PhonePeReceipt : GPayReceipt;
-
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-100 font-sans">
-      
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white font-sans">
+
       {/* Sidebar / Editor */}
-      <div className={`no-print w-full lg:w-1/3 bg-white border-r border-gray-200 h-auto lg:h-screen overflow-y-auto p-6 ${showPreview ? 'hidden lg:block' : 'block'}`}>
+      <div className={`sidebar-panel no-print w-full lg:w-1/3 bg-white border-r border-gray-200 h-auto lg:h-screen overflow-y-auto p-6 ${showPreview ? 'hidden lg:block' : 'block'}`}>
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <span className="material-icons text-blue-600">receipt</span>
@@ -112,22 +194,6 @@ function App() {
               >
                 GPay
               </button>
-            </div>
-          </div>
-
-          {/* Main Fields */}
-          <div className="grid grid-cols-2 gap-4">
-             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Amount (₹)</label>
-              <input
-                type="text"
-                value={data.amount}
-                onChange={(e) => handleChange('amount', e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Theme</label>
                 <button
                     onClick={() => handleChange('darkMode', !data.darkMode)}
                     className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -135,137 +201,106 @@ function App() {
                     {data.darkMode ? 'Switch to Light' : 'Switch to Dark'}
                 </button>
             </div>
+              <div className="mt-3">
+                <button onClick={() => setShowBulk(true)} className="w-full mt-2 px-4 py-2 bg-yellow-50 border border-yellow-400 text-yellow-800 rounded-md text-sm">Bulk Generate</button>
+              </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Date</label>
-              <input
-                type="text"
-                value={data.date}
-                onChange={(e) => handleChange('date', e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Time</label>
-              <input
-                type="text"
-                value={data.time}
-                onChange={(e) => handleChange('time', e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Sender Info */}
+          {/* User Input Section - Only Time, Date, Sender Name */}
           <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Sender (From)</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Edit Receipt Details</h3>
             <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Sender Name</label>
                 <input
-                    placeholder="Sender Name"
-                    value={data.senderName}
-                    onChange={(e) => handleChange('senderName', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  type="text"
+                  value={data.senderName}
+                  onChange={(e) => handleChange('senderName', e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2"
                 />
-                <input
-                    placeholder="Mobile Number (GPay Top)"
-                    value={data.senderMobile}
-                    onChange={(e) => handleChange('senderMobile', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Sender EmailID</label>
                  <input
                     placeholder="Sender UPI ID"
                     value={data.senderId}
                     onChange={(e) => handleChange('senderId', e.target.value)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
-                <input
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Bank Name</label>
+                 <input
                     placeholder="Sender Bank Name"
                     value={data.senderBankName}
                     onChange={(e) => handleChange('senderBankName', e.target.value)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
-            </div>
-          </div>
-
-          {/* Receiver Info */}
-           <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Receiver (To)</h3>
-            <div className="space-y-3">
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Date</label>
                 <input
-                    placeholder="Receiver Name"
-                    value={data.receiverName}
-                    onChange={(e) => handleChange('receiverName', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  type="text"
+                  value={data.date}
+                  onChange={(e) => handleChange('date', e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2"
+                  placeholder="e.g., 25 Nov 2025"
                 />
-                 <input
-                    placeholder="Receiver UPI ID"
-                    value={data.receiverId}
-                    onChange={(e) => handleChange('receiverId', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Time</label>
+                <input
+                  type="text"
+                  value={data.time}
+                  onChange={(e) => handleChange('time', e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2"
+                  placeholder="e.g., 07:48 pm"
                 />
-                 
-                 {/* Bank Selection */}
-                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Select Bank</label>
-                    <select
-                        value={data.receiverBankName}
-                        onChange={handleBankChange}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    >
-                        {BANKS.map(bank => (
-                            <option key={bank.name} value={bank.name}>{bank.name}</option>
-                        ))}
-                    </select>
-                 </div>
-
-                 <div className="grid grid-cols-2 gap-2">
-                    <input
-                        placeholder="Bank Name (Custom)"
-                        value={data.receiverBankName}
-                        onChange={(e) => handleChange('receiverBankName', e.target.value)}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
-                     <input
-                      placeholder="Last 4 Digits"
-                      maxLength={4}
-                      value={data.receiverLast4}
-                      onChange={(e) => handleChange('receiverLast4', e.target.value)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
-                 </div>
+              </div>
+              <button
+                onClick={generateIds}
+                className="w-full flex justify-center items-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100"
+              >
+                <span className="material-icons text-sm mr-2">cached</span>
+                Randomize Details
+              </button>
             </div>
           </div>
 
-          {/* Transaction IDs */}
-           <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-3">
-                <h3 className="text-sm font-medium text-gray-900">Transaction Details</h3>
-                <button onClick={generateIds} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Generate Random</button>
-            </div>
-            <div className="space-y-3">
-                <div>
-                    <label className="block text-xs text-gray-500 mb-1">Transaction ID / UPI ID</label>
-                    <input
-                        value={data.transactionId}
-                        onChange={(e) => handleChange('transactionId', e.target.value)}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono"
-                    />
-                </div>
-                {template === TemplateType.PHONE_PE && (
-                  <div>
-                      <label className="block text-xs text-gray-500 mb-1">UTR Number</label>
-                      <input
-                          value={data.utr}
-                          onChange={(e) => handleChange('utr', e.target.value)}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono"
-                      />
-                  </div>
-                )}
+          {/* Display-only Receiver & Bank Details */}
+          <div className="border-t pt-4 bg-gray-50 p-3 rounded-lg">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Receiver Details (Fixed)</h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-semibold">To</p>
+                <p className="text-gray-900 font-medium">{data.receiverName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-semibold">UPI ID</p>
+                <p className="text-gray-900">Google Pay • {data.receiverId}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-semibold">Bank</p>
+                <p className="text-gray-900">{data.receiverBankName} {data.receiverLast4}</p>
+              </div>
             </div>
           </div>
 
+          {/* Auto-generated Details Display */}
+          <div className="border-t pt-4 bg-blue-50 p-3 rounded-lg">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Auto-Generated Details</h3>
+            <div className="space-y-2 text-sm font-mono text-xs">
+              <div>
+                <p className="text-gray-600">Mobile: <span className="text-gray-900 font-semibold">{data.senderMobile}</span></p>
+              </div>
+              <div>
+                <p className="text-gray-600">Transaction ID: <span className="text-gray-900 font-semibold">{data.transactionId}</span></p>
+              </div>
+              <div>
+                <p className="text-gray-600">Google Transaction ID: <span className="text-gray-900 font-semibold">{data.utr}</span></p>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div className="mt-8 pt-6 border-t">
@@ -281,7 +316,7 @@ function App() {
       </div>
 
       {/* Preview Area - Visible on Desktop, Toggleable on Mobile */}
-      <div className={`w-full lg:w-2/3 bg-gray-200 lg:h-screen overflow-auto flex flex-col items-center lg:items-start justify-center lg:justify-start p-4 lg:p-8 relative ${!showPreview ? 'hidden lg:flex' : 'flex'}`}>
+      <div className={`preview-area w-full lg:w-2/3 bg-white lg:h-screen overflow-auto flex flex-col items-center lg:items-start justify-center lg:justify-start p-4 lg:p-8 relative ${!showPreview ? 'hidden lg:flex' : 'flex'}`}>
         
         {/* Mobile Toggle: Edit */}
         <div className="lg:hidden absolute top-4 right-4 z-50 no-print">
@@ -294,45 +329,60 @@ function App() {
         </div>
 
         <div>
-            {/* Print CSS injected here to control print layout without editing global CSS */}
-            <style>{`\
-              @page { size: A4; margin: 8mm; }\
-              @media print {\
-                .no-print { display: none !important; }\
-                /* reset body and html so content isn't clipped */\
-                html, body { height: auto !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }\
-                /* Printable container: constrain to page width, center, remove shadows/radius that can affect clipping */\
-                .printable {\
-                  visibility: visible !important;\
-                  position: static !important;\
-                  left: 0 !important;\
-                  top: 0 !important;\
-                  width: auto !important;\
-                  max-width: 180mm !important;\
-                  margin: 6mm auto !important;\
-                  box-shadow: none !important;\
-                  border-radius: 0 !important;\
-                  -webkit-transform: none !important;\
-                  transform: none !important;\
-                  overflow: visible !important;\
-                  -webkit-print-color-adjust: exact;\
-                  print-color-adjust: exact;\
-                }\
-                /* Ensure inner elements don't introduce scrollbars */\
-                .printable * { overflow: visible !important; }\
-                /* Hide any scrollbars in printed output */\
-                ::-webkit-scrollbar { display: none !important; }\
-              }\
-              /* Keep color adjustment for screen as well when printing */\
-              .printable { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\
+            <style>{`
+              @page { size: A4; margin: 0; }
+              @media print {
+                .no-print,
+                .sidebar-panel {
+                  display: none !important;
+                }
+                html, body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  height: auto !important;
+                  overflow: visible !important;
+                }
+                .preview-area {
+                  height: auto !important;
+                  max-height: none !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
+                }
+                .printable {
+                  visibility: visible !important;
+                  position: static !important;
+                  width: 100% !important;
+                  height: auto !important;
+                  page-break-inside: avoid !important;
+                  padding: 10mm 0 0 0 !important;
+                  margin: 0 !important;
+                }
+                .receipt-wrapper {
+                  page-break-inside: avoid !important;
+                  padding: 0 !important;
+                  margin: 0 auto !important;
+                }
+                .printable-receipt {
+                  page-break-inside: avoid !important;
+                  padding: 10mm 0 0 0 !important;
+                  margin: 0 auto !important;
+                }
+                .printable-receipt > * {
+                  margin-left: auto !important;
+                  margin-right: auto !important;
+                }
+              }
             `}</style>
 
-            <div className="print-only printable w-full max-w-md transition-all duration-300">
-            {/* Container for the Receipt */}
-            <div className="shadow-2xl rounded-xl bg-white">
-                 <TemplateComponent data={data} />
+            <div className="print-only printable w-full transition-all duration-300">
+              {showBulk ? (
+                <BulkGenerator baseData={data} onClose={() => setShowBulk(false)} />
+              ) : (
+                <div className="receipt-wrapper">
+                  <TemplateComponent data={data} />
+                </div>
+              )}
             </div>
-        </div>
         
         {/* Mobile Toggle: Bottom Back */}
         <div className="lg:hidden fixed bottom-6 w-full px-6 z-50 no-print">
