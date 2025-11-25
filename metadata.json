@@ -1,0 +1,5 @@
+{
+  "name": "ReceiptForge",
+  "description": "A payment receipt editor and generator supporting multiple template styles.",
+  "requestFramePermissions": []
+}
