@@ -3,7 +3,89 @@ import { PhonePeReceipt } from './components/PhonePeReceipt';
 import { GPayReceipt } from './components/GPayReceipt';
 import { ReceiptData, TemplateType, Bank } from './types';
 import BulkGenerator from './components/BulkGenerator';
+import { time } from 'console';
 
+
+
+
+const TRANSFORM_PATTERNS = [
+  // 45-50% range (very small)
+  { scale: 0.45, tx: 0, ty: 0 },        // 45% CENTER
+  { scale: 0.45, tx: 25, ty: -20 },     // 45% TOP-RIGHT
+  { scale: 0.45, tx: -25, ty: 20 },     // 45% BOTTOM-LEFT
+  { scale: 0.48, tx: 0, ty: 15 },       // 48% BOTTOM-CENTER
+  { scale: 0.50, tx: 0, ty: 0 },        // 50% CENTER
+  { scale: 0.50, tx: 30, ty: 0 },       // 50% CENTER-RIGHT
+  
+  // 51-60% range (small)
+  { scale: 0.52, tx: -30, ty: 0 },      // 52% CENTER-LEFT
+  { scale: 0.55, tx: 20, ty: 0 },       // 55% CENTER-RIGHT
+  { scale: 0.55, tx: -20, ty: 0 },      // 55% CENTER-LEFT
+  { scale: 0.58, tx: 0, ty: -18 },      // 58% TOP-CENTER
+  { scale: 0.60, tx: 0, ty: -15 },      // 60% TOP-CENTER
+  { scale: 0.60, tx: 25, ty: -22 },     // 60% TOP-RIGHT
+  
+  // 61-70% range (small-medium)
+  { scale: 0.62, tx: -25, ty: -22 },    // 62% TOP-LEFT
+  { scale: 0.65, tx: 25, ty: -20 },     // 65% TOP-RIGHT
+  { scale: 0.65, tx: -25, ty: -20 },    // 65% TOP-LEFT
+  { scale: 0.67, tx: 0, ty: 12 },       // 67% BOTTOM-CENTER
+  { scale: 0.70, tx: 0, ty: 0 },        // 70% CENTER
+  { scale: 0.70, tx: 30, ty: -25 },     // 70% TOP-RIGHT
+  
+  // 71-80% range (medium)
+  { scale: 0.70, tx: -30, ty: -25 },    // 70% TOP-LEFT
+  { scale: 0.72, tx: 28, ty: 18 },      // 72% BOTTOM-RIGHT
+  { scale: 0.75, tx: 0, ty: 20 },       // 75% BOTTOM-CENTER
+  { scale: 0.78, tx: -28, ty: 18 },     // 78% BOTTOM-LEFT
+  { scale: 0.80, tx: 25, ty: 25 },      // 80% BOTTOM-RIGHT
+  { scale: 0.80, tx: -25, ty: 25 },     // 80% BOTTOM-LEFT
+  
+  // 81-90% range (medium-large)
+  { scale: 0.82, tx: 0, ty: 0 },        // 82% CENTER
+  { scale: 0.85, tx: 0, ty: 0 },        // 85% CENTER
+  { scale: 0.87, tx: 22, ty: -18 },     // 87% TOP-CENTER-RIGHT
+  { scale: 0.90, tx: -22, ty: -18 },    // 90% TOP-CENTER-LEFT
+  { scale: 0.90, tx: 32, ty: 22 },      // 90% BOTTOM-RIGHT
+  
+  // 91-100% range (near normal)
+  { scale: 0.93, tx: -32, ty: 22 },     // 93% BOTTOM-LEFT
+  { scale: 0.95, tx: 30, ty: 20 },      // 95% BOTTOM-RIGHT
+  { scale: 0.95, tx: -30, ty: 20 },     // 95% BOTTOM-LEFT
+  { scale: 0.98, tx: 0, ty: -10 },      // 98% TOP-CENTER
+  { scale: 1.00, tx: 0, ty: 0 },        // 100% CENTER - PERFECT MIDDLE
+  
+  // 101-110% range (slightly large)
+  { scale: 1.02, tx: 0, ty: 0 },        // 102% CENTER
+  { scale: 1.05, tx: 0, ty: 0 },        // 105% CENTER
+  { scale: 1.07, tx: 24, ty: -22 },     // 107% TOP-RIGHT
+  { scale: 1.10, tx: -24, ty: -22 },    // 110% TOP-LEFT
+  { scale: 1.10, tx: 0, ty: 18 },       // 110% BOTTOM-CENTER
+  
+  // 111-120% range (large)
+  { scale: 1.12, tx: 28, ty: 24 },      // 112% BOTTOM-RIGHT
+  { scale: 1.15, tx: -28, ty: 24 },     // 115% BOTTOM-LEFT
+  { scale: 1.15, tx: 0, ty: 25 },       // 115% BOTTOM-CENTER
+  { scale: 1.18, tx: 26, ty: -24 },     // 118% TOP-RIGHT
+  { scale: 1.20, tx: 0, ty: 0 },        // 120% CENTER
+  
+];
+
+const getFixedTransform = (idx: number) => {
+  const pattern = TRANSFORM_PATTERNS[idx % TRANSFORM_PATTERNS.length];
+  return pattern;
+};
+
+const generateDramaticTransform = () => {
+  // HUGE Scale difference: 50% to 140% (massive size variation)
+  const scale = 0.5 + Math.random() * 0.9; // 0.5 to 1.4
+  
+  // HUGE Position difference: -250 to 250px horizontal, -200 to 200px vertical
+  const tx = Math.floor((Math.random() * 500) - 250); // -250 to 250px
+  const ty = Math.floor((Math.random() * 400) - 200);  // -200 to 200px
+  
+  return { scale, tx, ty };
+};
 // Bank Data with Logos
 const BANKS: Bank[] = [
   { name: 'Bank of India', logo: '/Bank of India.png' },
@@ -105,6 +187,16 @@ const generateSenderUPI = (fullName?: string, domain?: string) => {
   return `${namePart}${rand}@${domain || 'okaxis'}`;
 };
 
+
+const randomTimeBetween9And21 = () => {
+  const hour = 9 + Math.floor(Math.random() * 12);
+  const minute = Math.floor(Math.random() * 60);
+  const ampm = hour >= 12 ? 'pm' : 'am';
+  const hr12 = hour % 12 === 0 ? 12 : hour % 12;
+  const mm = String(minute).padStart(2, '0');
+  return `${hr12}:${mm} ${ampm}`;
+};
+
 // generate initial sender and bank so INITIAL_DATA types match
 const initialSenderName = generateSenderName();
 const initialBank = generateSenderBank();
@@ -133,7 +225,7 @@ const RECEIVER_OPTIONS = [
 const INITIAL_DATA: ReceiptData = {
   amount: '8,000',
   date: '25 Nov 2025',
-  time: '07:48 pm',
+  time: randomTimeBetween9And21(),
   receiverName: RECEIVER_OPTIONS[0].receiverName,
   receiverId: RECEIVER_OPTIONS[0].receiverId,
   receiverBankName: RECEIVER_OPTIONS[0].receiverBankName,
@@ -186,7 +278,8 @@ function App() {
       senderId: generateSenderUPI(newName, newBank.domain),
       senderBankName: newBank.name,
       transactionId: generateTransactionId(),
-      utr: generateGoogleTransactionId()
+      utr: generateGoogleTransactionId(),
+      time: randomTimeBetween9And21()
     }));
   };
 
@@ -203,25 +296,31 @@ function App() {
     }
   };
 
-  const handlePrint = () => {
-    // Apply a randomized transform to the single receipt before printing so layout/position vary
-    const el = document.querySelector('.printable .shadow-2xl') as HTMLElement | null;
-    if (el) {
-      const scale = 0.94 + Math.random() * 0.12; // ~0.94 - 1.06
-      const tx = Math.floor((Math.random() * 40) - 20); // -20px .. 20px
-      const ty = Math.floor((Math.random() * 40) - 20);
-      el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-      el.style.transformOrigin = 'top left';
+ const handlePrint = () => {
+  const el = document.querySelector('.printable .shadow-2xl') as HTMLElement | null;
+  if (el) {
+    // For single print, always use first pattern
+    const { scale, tx, ty } = getFixedTransform(0);
+    
+    console.log(`Single Print - Scale: ${scale.toFixed(2)}, TX: ${tx}px, TY: ${ty}px`);
+    
+    el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    el.style.transformOrigin = 'center top';
+    el.style.transition = 'none';
+    el.style.willChange = 'transform';
 
-      const cleanup = () => {
-        el.style.transform = '';
-        el.style.transformOrigin = '';
-        window.removeEventListener('afterprint', cleanup);
-      };
-      window.addEventListener('afterprint', cleanup);
-    }
-    window.print();
-  };
+    const cleanup = () => {
+      el.style.transform = '';
+      el.style.transformOrigin = '';
+      el.style.transition = '';
+      el.style.willChange = 'auto';
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+  }
+  window.print();
+};
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white font-sans">
 
@@ -356,29 +455,6 @@ function App() {
               </button>
             </div>
           </div>
-
-          {/* Display-only Receiver & Bank Details */}
-          {/* <div className="border-t pt-4 bg-gray-50 p-3 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Receiver Company</h3>
-            <div className="space-y-2">
-              {RECEIVER_OPTIONS.map((option) => (
-                <div key={option.id} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`receiver-${option.id}`}
-                    name="receiver"
-                    value={option.id}
-                    checked={selectedReceiver === option.id}
-                    onChange={(e) => handleReceiverChange(e.target.value)}
-                    className="w-4 h-4 text-blue-600 cursor-pointer"
-                  />
-                  <label htmlFor={`receiver-${option.id}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
-                    {option.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div> */}
 
           {/* Display-only Receiver & Bank Details */}
           <div className="border-t pt-4 bg-gray-50 p-3 rounded-lg">
