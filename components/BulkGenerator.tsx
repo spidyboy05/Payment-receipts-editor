@@ -3,12 +3,86 @@ import { ReceiptData } from '../types';
 import { GPayReceipt } from './GPayReceipt';
 
 interface Props {
-  baseData: ReceiptData; // uses receiver fields from this
+  baseData: ReceiptData;
   onClose: () => void;
 }
 
-// Random helpers (kept local to this component)
-const rand = (n: number) => Math.floor(Math.random() * n);
+// 52 UNIQUE TRANSFORM PATTERNS - Each receipt gets its own random size & position
+const TRANSFORM_PATTERNS = [
+  // 45-50% range (very small) - CENTERED IN MIDDLE OF PAGE
+  { scale: 0.45, tx: 0, ty: 0 },        // CENTER
+  { scale: 0.45, tx: 15, ty: 5 },       // SLIGHT RIGHT-MID
+  { scale: 0.45, tx: -15, ty: 5 },      // SLIGHT LEFT-MID
+  { scale: 0.48, tx: 10, ty: 8 },       // SLIGHT RIGHT-BOTTOM-MID
+  { scale: 0.50, tx: 0, ty: 0 },        // CENTER
+  { scale: 0.50, tx: -10, ty: 0 },      // SLIGHT LEFT-CENTER
+  
+  // 51-60% range (small) - CENTERED IN MIDDLE OF PAGE
+  { scale: 0.52, tx: -18, ty: 0 },      // LEFT-CENTER-MID
+  { scale: 0.55, tx: 18, ty: 0 },       // RIGHT-CENTER-MID
+  { scale: 0.55, tx: -12, ty: 0 },      // SLIGHT LEFT-CENTER
+  { scale: 0.58, tx: 15, ty: -8 },      // RIGHT-TOP-MID
+  { scale: 0.60, tx: -15, ty: -8 },     // LEFT-TOP-MID
+  { scale: 0.60, tx: 12, ty: -5 },      // SLIGHT RIGHT-TOP-MID
+  
+  // 61-70% range (small-medium) - MORE SPREAD
+  { scale: 0.62, tx: -22, ty: -15 },    // LEFT-TOP-MID
+  { scale: 0.65, tx: 25, ty: -15 },     // RIGHT-TOP
+  { scale: 0.65, tx: -25, ty: -15 },    // LEFT-TOP
+  { scale: 0.67, tx: 20, ty: 10 },      // RIGHT-BOTTOM-MID
+  { scale: 0.70, tx: -20, ty: 0 },      // LEFT-CENTER
+  { scale: 0.70, tx: 28, ty: -20 },     // FAR-RIGHT-TOP
+  
+  // 71-80% range (medium) - MORE LEFT/RIGHT VARIATION
+  { scale: 0.70, tx: -45, ty: -25 },    // FAR-LEFT-TOP
+  { scale: 0.72, tx: 40, ty: 18 },      // RIGHT-BOTTOM
+  { scale: 0.75, tx: -40, ty: 20 },     // LEFT-BOTTOM
+  { scale: 0.78, tx: 42, ty: 18 },      // RIGHT-BOTTOM-FAR
+  { scale: 0.80, tx: 35, ty: 25 },      // RIGHT-BOTTOM-FAR
+  { scale: 0.80, tx: -35, ty: 25 },     // LEFT-BOTTOM-FAR
+  
+  // 81-90% range (medium-large) - MORE LEFT/RIGHT VARIATION
+  { scale: 0.82, tx: 38, ty: 0 },       // RIGHT-CENTER-MID
+  { scale: 0.85, tx: -38, ty: 0 },      // LEFT-CENTER-MID
+  { scale: 0.87, tx: 40, ty: -18 },     // RIGHT-TOP-MID
+  { scale: 0.90, tx: -40, ty: -18 },    // LEFT-TOP-MID
+  { scale: 0.90, tx: 45, ty: 22 },      // FAR-RIGHT-BOTTOM
+  
+  // 91-100% range (near normal) - MORE LEFT/RIGHT VARIATION
+  { scale: 0.93, tx: -45, ty: 22 },     // FAR-LEFT-BOTTOM
+  { scale: 0.95, tx: 42, ty: 20 },      // RIGHT-BOTTOM-MID
+  { scale: 0.95, tx: -42, ty: 20 },     // LEFT-BOTTOM-MID
+  { scale: 0.98, tx: 38, ty: -10 },     // RIGHT-TOP-SLIGHT
+  { scale: 1.00, tx: 0, ty: 0 },        // CENTER - PERFECT MIDDLE
+  
+  // 101-110% range (slightly large) - MORE LEFT/RIGHT VARIATION
+  { scale: 1.02, tx: 35, ty: 0 },       // RIGHT-CENTER
+  { scale: 1.05, tx: -35, ty: 0 },      // LEFT-CENTER
+  { scale: 1.07, tx: 40, ty: -22 },     // RIGHT-TOP-FAR
+  { scale: 1.10, tx: -40, ty: -22 },    // LEFT-TOP-FAR
+  { scale: 1.10, tx: 0, ty: 18 },       // CENTER-BOTTOM
+  
+  // 111-120% range (large) - MORE LEFT/RIGHT VARIATION
+  { scale: 1.12, tx: 42, ty: 24 },      // FAR-RIGHT-BOTTOM
+  { scale: 1.15, tx: -42, ty: 24 },     // FAR-LEFT-BOTTOM
+  { scale: 1.15, tx: 38, ty: 25 },      // RIGHT-BOTTOM-FAR
+  { scale: 1.18, tx: -38, ty: -24 },    // LEFT-TOP-FAR
+  { scale: 1.20, tx: 40, ty: 0 },       // RIGHT-CENTER-FAR
+];
+
+// Fisher-Yates shuffle to randomize pattern indices
+const shufflePatterns = (count: number) => {
+  const indices = Array.from({ length: TRANSFORM_PATTERNS.length }, (_, i) => i);
+  
+  // Shuffle the indices
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  
+  // Return requested count of patterns (cycling if needed)
+  return Array.from({ length: count }, (_, i) => TRANSFORM_PATTERNS[indices[i % indices.length]]);
+};
 
 const generatePhone = () => {
   const firstDigit = Math.random() > 0.5 ? 8 : 9;
@@ -28,7 +102,7 @@ const generateGoogleTransactionId = () => {
 const generateSenderName = () => {
   const first = ['Rajesh','Priya','Amit','Sneha','Vikram','Neha','Arjun','Pooja','Rohan','Ananya'];
   const last = ['Sharma','Patel','Kumar','Singh','Gupta','Reddy','Verma','Joshi'];
-  return `${first[rand(first.length)]} ${last[rand(last.length)]}`;
+  return `${first[Math.floor(Math.random() * first.length)]} ${last[Math.floor(Math.random() * last.length)]}`;
 };
 
 const senderBanks = [
@@ -38,7 +112,7 @@ const senderBanks = [
   { name: 'State Bank of India', domain: 'oksbi' },
 ];
 
-const generateSenderBank = () => senderBanks[rand(senderBanks.length)];
+const generateSenderBank = () => senderBanks[Math.floor(Math.random() * senderBanks.length)];
 
 const generateSenderUPI = (fullName?: string, domain?: string) => {
   const r = Math.random().toString(36).substring(2, 6);
@@ -48,15 +122,11 @@ const generateSenderUPI = (fullName?: string, domain?: string) => {
   return `${namePart}${r}@${domain || 'okaxis'}`;
 };
 
-const randomAmount = () => {
-  // keep amount constant for bulk generation per user request
-  return '8,000';
-};
+const randomAmount = () => '8,000';
 
 const randomTimeBetween9And21 = () => {
-  // pick hour between 9 and 20 inclusive, minutes 0-59
-  const hour = 9 + rand(12); // 9..20
-  const minute = rand(60);
+  const hour = 9 + Math.floor(Math.random() * 12);
+  const minute = Math.floor(Math.random() * 60);
   const ampm = hour >= 12 ? 'pm' : 'am';
   const hr12 = hour % 12 === 0 ? 12 : hour % 12;
   const mm = String(minute).padStart(2, '0');
@@ -67,12 +137,22 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
   const [date, setDate] = useState<string>(baseData.date || '');
   const [count, setCount] = useState<number>(3);
   const [receipts, setReceipts] = useState<ReceiptData[] | null>(null);
+  // Store the random transforms for each receipt so they stay consistent
+  const [transforms, setTransforms] = useState<Array<{scale: number; tx: number; ty: number}>>([]);
 
   const generateBatch = () => {
     const arr: ReceiptData[] = [];
+    // Get shuffled transforms - each receipt gets unique random pattern
+    const shuffledTransforms = shufflePatterns(count);
+    const newTransforms: Array<{scale: number; tx: number; ty: number}> = [];
+    
     for (let i = 0; i < count; i++) {
       const sName = generateSenderName();
       const sBank = generateSenderBank();
+      // Use shuffled transform for this receipt
+      const transform = shuffledTransforms[i];
+      newTransforms.push(transform);
+      
       const item: ReceiptData = {
         amount: randomAmount(),
         date: date || baseData.date,
@@ -86,7 +166,7 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
         senderMobile: generatePhone(),
         senderId: generateSenderUPI(sName, sBank.domain),
         senderBankName: sBank.name,
-        senderLast4: String(1000 + rand(9000)).slice(-4),
+        senderLast4: String(1000 + Math.floor(Math.random() * 9000)).slice(-4),
         transactionId: generateTransactionId(),
         utr: generateGoogleTransactionId(),
         darkMode: baseData.darkMode,
@@ -95,48 +175,68 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
       arr.push(item);
     }
     setReceipts(arr);
+    setTransforms(newTransforms);
   };
 
   const handlePrintAll = () => {
-    // Apply a small randomized transform per receipt so each prints slightly different
     const nodes = document.querySelectorAll('.printable .printable-receipt');
-    nodes.forEach((n) => {
+    console.log(`Printing ${nodes.length} receipts with RANDOM transforms`);
+    
+    nodes.forEach((n, index) => {
       const el = n as HTMLElement;
-      const scale = 0.95 + Math.random() * 0.12; // ~0.95 - 1.07
-      const tx = Math.floor((Math.random() * 40) - 20); // -20px .. 20px
-      const ty = Math.floor((Math.random() * 40) - 20);
+      // Use the stored transform for this receipt
+      const transform = transforms[index] || TRANSFORM_PATTERNS[0];
+      const { scale, tx, ty } = transform;
+      
+      console.log(`Receipt ${index} - Scale: ${scale.toFixed(2)}, TX: ${tx}px, TY: ${ty}px`);
+      
       el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-      el.style.transformOrigin = 'top left';
+      el.style.transformOrigin = 'center top';
+      el.style.transition = 'none';
+      el.style.willChange = 'transform';
+      el.style.pageBreakInside = 'avoid';
+      el.style.pageBreakAfter = 'always';
     });
 
-    // cleanup after print
     const cleanup = () => {
       nodes.forEach(n => {
         const el = n as HTMLElement;
         el.style.transform = '';
         el.style.transformOrigin = '';
+        el.style.transition = '';
+        el.style.willChange = 'auto';
+        el.style.pageBreakInside = '';
+        el.style.pageBreakAfter = '';
       });
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
-
-    // open print dialog
     window.print();
   };
 
   const handlePrintSingle = (idx: number) => {
-    // Apply a randomized transform to the single receipt before printing
     const el = document.querySelector(`.printable-receipt-${idx}`) as HTMLElement | null;
     if (el) {
-      const scale = 0.94 + Math.random() * 0.12; // ~0.94 - 1.06
-      const tx = Math.floor((Math.random() * 40) - 20); // -20px .. 20px
-      const ty = Math.floor((Math.random() * 40) - 20);
+      // Use the stored transform for this receipt
+      const transform = transforms[idx] || TRANSFORM_PATTERNS[0];
+      const { scale, tx, ty } = transform;
+      
+      console.log(`Single Receipt ${idx} - Scale: ${scale.toFixed(2)}, TX: ${tx}px, TY: ${ty}px`);
+      
       el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-      el.style.transformOrigin = 'top left';
+      el.style.transformOrigin = 'center top';
+      el.style.transition = 'none';
+      el.style.willChange = 'transform';
+      el.style.pageBreakInside = 'avoid';
+      el.style.pageBreakAfter = 'always';
 
       const cleanup = () => {
         el.style.transform = '';
         el.style.transformOrigin = '';
+        el.style.transition = '';
+        el.style.willChange = 'auto';
+        el.style.pageBreakInside = '';
+        el.style.pageBreakAfter = '';
         window.removeEventListener('afterprint', cleanup);
       };
       window.addEventListener('afterprint', cleanup);
@@ -172,7 +272,7 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
 
         <div className="flex gap-2 mt-2 no-print">
           <button onClick={generateBatch} className="px-4 py-2 bg-green-600 text-white rounded">Generate</button>
-          <button onClick={() => { setReceipts(null); }} className="px-4 py-2 bg-gray-100 rounded">Clear</button>
+          <button onClick={() => { setReceipts(null); setTransforms([]); }} className="px-4 py-2 bg-gray-100 rounded">Clear</button>
         </div>
       </div>
 
@@ -180,7 +280,7 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
           <div>
           <div className="mb-3 flex gap-2 no-print">
             <button onClick={handlePrintAll} className="px-4 py-2 bg-blue-600 text-white rounded">Print All</button>
-            <button onClick={() => setReceipts(null)} className="px-4 py-2 bg-gray-100 rounded">Close Batch</button>
+            <button onClick={() => { setReceipts(null); setTransforms([]); }} className="px-4 py-2 bg-gray-100 rounded">Close Batch</button>
           </div>
 
           <div className="printable">
