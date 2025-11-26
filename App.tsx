@@ -42,12 +42,41 @@ const generateGoogleTransactionId = () => {
 
 // Generate random sender name
 const generateSenderName = () => {
-  const firstNames = ['Rajesh', 'Priya', 'Amit', 'Sneha', 'Vikram', 'Neha', 'Arjun', 'Pooja', 'Rohan', 'Ananya', 'Karan', 'Divya'];
-  const lastNames = ['Sharma', 'Patel', 'Kumar', 'Singh', 'Gupta', 'Reddy', 'Verma', 'Joshi', 'Nair', 'Iyer', 'Desai', 'Rao'];
+ const firstNames = [
+  "Aadil","Aamir","Aaqil","Abbas","Abdul","Adeel","Adnan","Ahmed","Ahsan",
+  "Akbar","Ali","Amaan","Ameer","Amir","Anas","Aqeel","Arbaz","Arham","Arif",
+  "Arman","Arsalan","Arshad","Arslan","Asad","Asif","Ashraf","Ayan","Ayaan",
+  "Ayaz","Azhar","Bashir","Bilal","Danish","Dawood","Ejaz","Faiz","Faizan",
+  "Farhan","Firoz","Ghulam","Habib","Hafeez","Haider","Hamid","Hamza",
+  "Haroon","Hasan","Hassan","Huzaifa","Ibrahim","Idrees","Irfan","Ishaq",
+  "Ismail","Jabbar","Jaffar","Jalal","Jameel","Junaid","Kabir","Kaleem",
+  "Kamil","Karim","Khalid","Luqman","Maaz","Mahboob","Mahmud","Majid",
+  "Mansoor","Maruf","Mehran","Mirza","Moin","Mubarak","Mukhtar","Munir",
+  "Naeem","Naseer","Nawaz","Nizam","Noor","Nouman","Owais","Parvez","Qadir",
+  "Qasim","Rafi","Rahim","Rahman","Rashid","Saad","Sadiq","Saif","Salman",
+  "Sameer","Sarfaraz","Shabbir","Shoaib"
+];
+const lastNames = [
+  "Abbasi","Abidi","Afzal","Ahmad","Ahsan","Akhter","Alam","Ali","Amiri",
+  "Ansari","Arif","Aslam","Azmi","Badr","Baghdadi","Baig","Barakati","Barkati",
+  "Burhan","Chishti","Dahlawi","Dar","Darwish","Dehlavi","Durani","Fakhri",
+  "Farooqi","Faruqi","Fatehi","Ghauri","Ghori","Habibi","Hanafi","Hashmi",
+  "Hussaini","Hussain","Hyderi","Iqbal","Islam","Islahi","Jafri","Jahani",
+  "Jalali","Jameeli","Kamal","Kamali","Khan","Khilji","Khot","Lari","Lodi",
+  "Malik","Manzoor","Marufi","Mir","Mirza","Mughal","Mukhtar","Nadvi","Najafi",
+  "Naqvi","Naseemi","Nizami","Nomani","Noori","Parvez","Qadri","Qasmi","Qureshi",
+  "Rahmani","Rasheedi","Raza","Razvi","Sadiqi","Saeedi","Sahibi","Salafi",
+  "Samnani","Saqib","Siddiqi","Siraji","Subhani","Tabrizi","Tahir","Talib",
+  "Tanvi","Usmani","Wahid","Warsi","Yamani","Yaqoobi","Yousufi","Zaidi",
+  "Zaman","Zargar","Zubairi","Zuberi"
+];
+
+  
   const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
   const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-  return `${firstName} ${lastName}`;
+  return `${firstName.toUpperCase()} ${lastName.toUpperCase()}`;
 };
+
 
 // Generate random sender bank and its UPI domain
 const generateSenderBank = () => {
@@ -80,15 +109,36 @@ const generateSenderUPI = (fullName?: string, domain?: string) => {
 const initialSenderName = generateSenderName();
 const initialBank = generateSenderBank();
 
+const RECEIVER_OPTIONS = [
+  {
+    id: 'vivan',
+    name: 'VIVAN INTERNATIONAL',
+    receiverName: 'VIVAN INTERNATIONAL',
+    receiverId: 'vivaninternational@okaxis',
+    receiverBankName: 'Axis Bank',
+    receiverLast4: '1845',
+    bankLogo: '/Axis Bank.png',
+  },
+  {
+    id: 'sk',
+    name: 'S K INTERNATIONAL',
+    receiverName: 'S K INTERNATIONAL',
+    receiverId: 'skinternational@okhdfcbank',
+    receiverBankName: 'HDFC Bank',
+    receiverLast4: '2281',
+    bankLogo: '/HDFC Bank.png',
+  },
+];
+
 const INITIAL_DATA: ReceiptData = {
   amount: '8,000',
   date: '25 Nov 2025',
   time: '07:48 pm',
-  receiverName: 'VIVAN INTERNATIONAL',
-  receiverId: 'vivaninternational@okaxis',
-  receiverBankName: 'Axis Bank',
-  receiverLast4: '1845',
-  bankLogo: BANKS[2].logo,
+  receiverName: RECEIVER_OPTIONS[0].receiverName,
+  receiverId: RECEIVER_OPTIONS[0].receiverId,
+  receiverBankName: RECEIVER_OPTIONS[0].receiverBankName,
+  receiverLast4: RECEIVER_OPTIONS[0].receiverLast4,
+  bankLogo: RECEIVER_OPTIONS[0].bankLogo,
   senderName: initialSenderName,
   senderMobile: generatePhone(),
   senderId: generateSenderUPI(initialSenderName, initialBank.domain),
@@ -106,9 +156,25 @@ function App() {
   const [template, setTemplate] = useState<TemplateType>(TemplateType.GPAY);
   const [showPreview, setShowPreview] = useState(true);
   const [showBulk, setShowBulk] = useState(false);
+  const [selectedReceiver, setSelectedReceiver] = useState<string>('vivan');
 
   const handleChange = (field: keyof ReceiptData, value: any) => {
     setData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleReceiverChange = (receiverId: string) => {
+    setSelectedReceiver(receiverId);
+    const receiver = RECEIVER_OPTIONS.find(r => r.id === receiverId);
+    if (receiver) {
+      setData(prev => ({
+        ...prev,
+        receiverName: receiver.receiverName,
+        receiverId: receiver.receiverId,
+        receiverBankName: receiver.receiverBankName,
+        receiverLast4: receiver.receiverLast4,
+        bankLogo: receiver.bankLogo,
+      }));
+    }
   };
   const generateIds = () => {
     const newName = generateSenderName();
@@ -206,6 +272,30 @@ function App() {
               </div>
           </div>
 
+          
+          {/* Display-only Receiver & Bank Details */}
+          <div className="border-t pt-4 bg-gray-50 p-3 rounded-lg">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Receiver Company</h3>
+            <div className="space-y-2">
+              {RECEIVER_OPTIONS.map((option) => (
+                <div key={option.id} className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`receiver-${option.id}`}
+                    name="receiver"
+                    value={option.id}
+                    checked={selectedReceiver === option.id}
+                    onChange={(e) => handleReceiverChange(e.target.value)}
+                    className="w-4 h-4 text-blue-600 cursor-pointer"
+                  />
+                  <label htmlFor={`receiver-${option.id}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                    {option.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* User Input Section - Only Time, Date, Sender Name */}
           <div className="border-t pt-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3">Edit Receipt Details</h3>
@@ -266,6 +356,29 @@ function App() {
               </button>
             </div>
           </div>
+
+          {/* Display-only Receiver & Bank Details */}
+          {/* <div className="border-t pt-4 bg-gray-50 p-3 rounded-lg">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Receiver Company</h3>
+            <div className="space-y-2">
+              {RECEIVER_OPTIONS.map((option) => (
+                <div key={option.id} className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`receiver-${option.id}`}
+                    name="receiver"
+                    value={option.id}
+                    checked={selectedReceiver === option.id}
+                    onChange={(e) => handleReceiverChange(e.target.value)}
+                    className="w-4 h-4 text-blue-600 cursor-pointer"
+                  />
+                  <label htmlFor={`receiver-${option.id}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                    {option.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div> */}
 
           {/* Display-only Receiver & Bank Details */}
           <div className="border-t pt-4 bg-gray-50 p-3 rounded-lg">
