@@ -76,7 +76,7 @@ const generateGoogleTransactionId = () => {
 };
 
 const generateSenderName = () => {
-  const first = [
+  const firstNames = [
   "Aadil","Aamir","Aaqil","Abbas","Abdul","Adeel","Adnan","Ahmed","Ahsan",
   "Akbar","Ali","Amaan","Ameer","Amir","Anas","Aqeel","Arbaz","Arham","Arif",
   "Arman","Arsalan","Arshad","Arslan","Asad","Asif","Ashraf","Ayan","Ayaan",
@@ -90,7 +90,7 @@ const generateSenderName = () => {
   "Qasim","Rafi","Rahim","Rahman","Rashid","Saad","Sadiq","Saif","Salman",
   "Sameer","Sarfaraz","Shabbir","Shoaib"
 ];
-  const last = [
+  const lastName = [
   "Abbasi","Abidi","Afzal","Ahmad","Ahsan","Akhter","Alam","Ali","Amiri",
   "Ansari","Arif","Aslam","Azmi","Badr","Baghdadi","Baig","Barakati","Barkati",
   "Burhan","Chishti","Dahlawi","Dar","Darwish","Dehlavi","Durani","Fakhri",
@@ -310,4 +310,5 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
 };
 
 export default BulkGenerator;
+
 
