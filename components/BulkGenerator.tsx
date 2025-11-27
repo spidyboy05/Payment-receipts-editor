@@ -30,14 +30,7 @@ const TRANSFORM_PATTERNS = [
   { scale: 0.95, tx: -42, ty: 20 },     // LEFT-BOTTOM-MID
   { scale: 0.98, tx: 38, ty: -10 },     // RIGHT-TOP-SLIGHT
   { scale: 1.00, tx: 0, ty: 0 },        // CENTER - PERFECT MIDDLE
-  
-  // 101-110% range (slightly large) - MORE LEFT/RIGHT VARIATION
-  { scale: 1.02, tx: 35, ty: 0 },       // RIGHT-CENTER
-  { scale: 1.05, tx: -35, ty: 0 },      // LEFT-CENTER
-  { scale: 1.07, tx: 40, ty: -22 },     // RIGHT-TOP-FAR
-  { scale: 1.10, tx: -40, ty: -22 },    // LEFT-TOP-FAR
-  { scale: 1.10, tx: 0, ty: 18 },       // CENTER-BOTTOM
-  
+ 
 ];
 
 // Fisher-Yates shuffle to randomize pattern indices
@@ -304,6 +297,7 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
 };
 
 export default BulkGenerator;
+
 
 
 
