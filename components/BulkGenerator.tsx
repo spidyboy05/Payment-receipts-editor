@@ -9,30 +9,6 @@ interface Props {
 
 // 52 UNIQUE TRANSFORM PATTERNS - Each receipt gets its own random size & position
 const TRANSFORM_PATTERNS = [
-  // 45-50% range (very small) - CENTERED IN MIDDLE OF PAGE
-  { scale: 0.45, tx: 0, ty: 0 },        // CENTER
-  { scale: 0.45, tx: 15, ty: 5 },       // SLIGHT RIGHT-MID
-  { scale: 0.45, tx: -15, ty: 5 },      // SLIGHT LEFT-MID
-  { scale: 0.48, tx: 10, ty: 8 },       // SLIGHT RIGHT-BOTTOM-MID
-  { scale: 0.50, tx: 0, ty: 0 },        // CENTER
-  { scale: 0.50, tx: -10, ty: 0 },      // SLIGHT LEFT-CENTER
-  
-  // 51-60% range (small) - CENTERED IN MIDDLE OF PAGE
-  { scale: 0.52, tx: -18, ty: 0 },      // LEFT-CENTER-MID
-  { scale: 0.55, tx: 18, ty: 0 },       // RIGHT-CENTER-MID
-  { scale: 0.55, tx: -12, ty: 0 },      // SLIGHT LEFT-CENTER
-  { scale: 0.58, tx: 15, ty: -8 },      // RIGHT-TOP-MID
-  { scale: 0.60, tx: -15, ty: -8 },     // LEFT-TOP-MID
-  { scale: 0.60, tx: 12, ty: -5 },      // SLIGHT RIGHT-TOP-MID
-  
-  // 61-70% range (small-medium) - MORE SPREAD
-  { scale: 0.62, tx: -22, ty: -15 },    // LEFT-TOP-MID
-  { scale: 0.65, tx: 25, ty: -15 },     // RIGHT-TOP
-  { scale: 0.65, tx: -25, ty: -15 },    // LEFT-TOP
-  { scale: 0.67, tx: 20, ty: 10 },      // RIGHT-BOTTOM-MID
-  { scale: 0.70, tx: -20, ty: 0 },      // LEFT-CENTER
-  { scale: 0.70, tx: 28, ty: -20 },     // FAR-RIGHT-TOP
-  
   // 71-80% range (medium) - MORE LEFT/RIGHT VARIATION
   { scale: 0.70, tx: -45, ty: -25 },    // FAR-LEFT-TOP
   { scale: 0.72, tx: 40, ty: 18 },      // RIGHT-BOTTOM
@@ -100,9 +76,37 @@ const generateGoogleTransactionId = () => {
 };
 
 const generateSenderName = () => {
-  const first = ['Rajesh','Priya','Amit','Sneha','Vikram','Neha','Arjun','Pooja','Rohan','Ananya'];
-  const last = ['Sharma','Patel','Kumar','Singh','Gupta','Reddy','Verma','Joshi'];
-  return `${first[Math.floor(Math.random() * first.length)]} ${last[Math.floor(Math.random() * last.length)]}`;
+  const first = [
+  "Aadil","Aamir","Aaqil","Abbas","Abdul","Adeel","Adnan","Ahmed","Ahsan",
+  "Akbar","Ali","Amaan","Ameer","Amir","Anas","Aqeel","Arbaz","Arham","Arif",
+  "Arman","Arsalan","Arshad","Arslan","Asad","Asif","Ashraf","Ayan","Ayaan",
+  "Ayaz","Azhar","Bashir","Bilal","Danish","Dawood","Ejaz","Faiz","Faizan",
+  "Farhan","Firoz","Ghulam","Habib","Hafeez","Haider","Hamid","Hamza",
+  "Haroon","Hasan","Hassan","Huzaifa","Ibrahim","Idrees","Irfan","Ishaq",
+  "Ismail","Jabbar","Jaffar","Jalal","Jameel","Junaid","Kabir","Kaleem",
+  "Kamil","Karim","Khalid","Luqman","Maaz","Mahboob","Mahmud","Majid",
+  "Mansoor","Maruf","Mehran","Mirza","Moin","Mubarak","Mukhtar","Munir",
+  "Naeem","Naseer","Nawaz","Nizam","Noor","Nouman","Owais","Parvez","Qadir",
+  "Qasim","Rafi","Rahim","Rahman","Rashid","Saad","Sadiq","Saif","Salman",
+  "Sameer","Sarfaraz","Shabbir","Shoaib"
+];
+  const last = [
+  "Abbasi","Abidi","Afzal","Ahmad","Ahsan","Akhter","Alam","Ali","Amiri",
+  "Ansari","Arif","Aslam","Azmi","Badr","Baghdadi","Baig","Barakati","Barkati",
+  "Burhan","Chishti","Dahlawi","Dar","Darwish","Dehlavi","Durani","Fakhri",
+  "Farooqi","Faruqi","Fatehi","Ghauri","Ghori","Habibi","Hanafi","Hashmi",
+  "Hussaini","Hussain","Hyderi","Iqbal","Islam","Islahi","Jafri","Jahani",
+  "Jalali","Jameeli","Kamal","Kamali","Khan","Khilji","Khot","Lari","Lodi",
+  "Malik","Manzoor","Marufi","Mir","Mirza","Mughal","Mukhtar","Nadvi","Najafi",
+  "Naqvi","Naseemi","Nizami","Nomani","Noori","Parvez","Qadri","Qasmi","Qureshi",
+  "Rahmani","Rasheedi","Raza","Razvi","Sadiqi","Saeedi","Sahibi","Salafi",
+  "Samnani","Saqib","Siddiqi","Siraji","Subhani","Tabrizi","Tahir","Talib",
+  "Tanvi","Usmani","Wahid","Warsi","Yamani","Yaqoobi","Yousufi","Zaidi",
+  "Zaman","Zargar","Zubairi","Zuberi"
+];
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+  return `${firstName.toUpperCase()} ${lastName.toUpperCase()}`;
 };
 
 const senderBanks = [
@@ -306,3 +310,4 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
 };
 
 export default BulkGenerator;
+
