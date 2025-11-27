@@ -90,7 +90,7 @@ const generateSenderName = () => {
   "Qasim","Rafi","Rahim","Rahman","Rashid","Saad","Sadiq","Saif","Salman",
   "Sameer","Sarfaraz","Shabbir","Shoaib"
 ];
-  const lastName = [
+  const lastNames = [
   "Abbasi","Abidi","Afzal","Ahmad","Ahsan","Akhter","Alam","Ali","Amiri",
   "Ansari","Arif","Aslam","Azmi","Badr","Baghdadi","Baig","Barakati","Barkati",
   "Burhan","Chishti","Dahlawi","Dar","Darwish","Dehlavi","Durani","Fakhri",
@@ -310,5 +310,6 @@ export const BulkGenerator: React.FC<Props> = ({ baseData, onClose }) => {
 };
 
 export default BulkGenerator;
+
 
 
